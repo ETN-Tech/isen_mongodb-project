@@ -1,0 +1,19 @@
+{
+    "name": "mongodb-project",
+    "version": "1.0.0",
+    "description": "",
+    "engines": {
+        "node": "14.x"
+    },
+    "scripts": {
+        "start": "node index"
+    },
+    "cacheDirectories": [
+        "node_modules"
+    ],
+    "dependencies": {
+        "express": "^4.17.1",
+        "mongodb": "^4.1.2"
+    },
+    "license": "MIT"
+}
