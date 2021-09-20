@@ -17,8 +17,8 @@ Database is composed of 2 collections :
     "coordinates": [float, float]
   },
   "size": interger,
-  "available": boolean,
   "tpe": boolean,
+  "available": boolean,
   "updatedAt": Date
 }
 ```
