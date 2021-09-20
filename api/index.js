@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express();
 
-const velos = require('./data/vlille-realtime.json')
+const velos = require('../data/vlille-realtime.json')
 
 // Handle root
 router.get('/', function(req, res) {
@@ -41,12 +41,14 @@ router.get('/velos/:id', (req, res) => {
 
 router.post('/velos', (req, res) => {
     db.collection('stations').insertOne({
-            "stationId": req.body.stationId,
-            "geolocation": req.body.geolocation,
-            "size": req.body.size,
-            "name": req.body.name,
-            "tpe": req.body.tpe,
-            "available": req.body.available
+        "stationId": req.body.stationId,
+        "city": req.body.city,
+        "name": req.body.name,
+        "geolocation": req.body.geolocation,
+        "size": req.body.size,
+        "tpe": req.body.tpe,
+        "available": req.body.available,
+        "updatedAt": Date
         })
         .then(docs => res.status(200).json(docs))
         .catch(err => {
@@ -70,6 +72,5 @@ router.delete('/velos/:id', (req, res) => {
     velos.splice(velos.indexOf(velo), 1)
     res.status(200).json(velos)
 })
-
 
 module.exports = router
