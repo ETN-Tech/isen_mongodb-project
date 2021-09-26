@@ -33,9 +33,95 @@ router.get('/stations', (req, res) => {
         })
 })
 
+router.get('/stations/find/:name', (req, res) => {
+    stations_static.find({
+        "name": {
+            $regex: req.params.name,
+            $options: "ix"
+        }
+    }).toArray()
+        .then(docs => res.status(200).json(docs))
+        .catch(err => {
+            console.log(err)
+            throw err
+        })
+})
+
+router.get('/stations/near/:longitude/:latitude', (req, res) => {
+    stations_static.aggregate([
+        {
+            $geoNear: {
+                distanceField: "distance",
+                near: {
+                    type: "Point",
+                    coordinates: [parseFloat(req.params.longitude), parseFloat(req.params.latitude)]
+                },
+                maxDistance: 1500 // max distance in meters
+            }
+        },
+        {
+            $lookup: {
+                from: "stations_dynamic",
+                localField: "stationId",
+                foreignField: "stationStaticId",
+                as: "data"
+            }
+        }
+    ]).toArray()
+        .then(docs => res.status(200).json(docs))
+        .catch(err => {
+            console.log(err)
+            throw err
+        });
+})
+
 router.get('/stations/:id', (req, res) => {
     stations_static.find({
         _id: ObjectId(req.params.id)
+    })
+        .then(doc => res.status(200).json(doc))
+        .catch(err => {
+            console.log(err)
+            throw err
+        })
+})
+
+router.get('/stations/activate/:x1/:y1/:x2/:y2', (req, res) => {
+    stations_static.updateMany({
+        "geolocation": {
+            $geoWithin: {
+                $box: [
+                    [ parseFloat(req.params.x1), parseFloat(req.params.y1) ],
+                    [ parseFloat(req.params.x2), parseFloat(req.params.y2) ]
+                ]
+            }
+        }
+    }, {
+        $set: {
+            "available": true
+        }
+    })
+        .then(doc => res.status(200).json(doc))
+        .catch(err => {
+            console.log(err)
+            throw err
+        })
+})
+
+router.get('/stations/deactivate/:x1/:y1/:x2/:y2', (req, res) => {
+    stations_static.updateMany({
+        "geolocation": {
+            $geoWithin: {
+                $box: [
+                    [ parseFloat(req.params.x1), parseFloat(req.params.y1) ],
+                    [ parseFloat(req.params.x2), parseFloat(req.params.y2) ]
+                ]
+            }
+        }
+    }, {
+        $set: {
+            "available": false
+        }
     })
         .then(doc => res.status(200).json(doc))
         .catch(err => {
@@ -54,7 +140,7 @@ router.post('/stations', (req, res) => {
         "tpe": req.body.tpe,
         "available": req.body.available,
         "updatedAt": new Date()
-        })
+    })
         .then(docs => res.status(200).json(docs))
         .catch(err => {
             console.log(err)
