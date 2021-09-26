@@ -8,7 +8,7 @@ const api = require('./api');
 const workers = require('./workers');
 
 app.get('/', (req, res) => {
-    res.send('VeloLand up & running!')
+    res.send('VeloLand App up & running!')
 })
 
 app.use('/api', api);
@@ -16,5 +16,5 @@ app.use('/api', api);
 app.use('/workers', workers);
 
 app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`)
+    console.log(`VeloLand App at http://localhost:${port}`)
 })

@@ -2,6 +2,7 @@ const express = require('express')
 const router = express();
 
 const velos = require('../data/vlille-realtime.json')
+const {ObjectId} = require("mongodb");
 
 // Handle root
 router.get('/', function(req, res) {
@@ -48,7 +49,7 @@ router.post('/velos', (req, res) => {
         "size": req.body.size,
         "tpe": req.body.tpe,
         "available": req.body.available,
-        "updatedAt": Date
+        "updatedAt": new Date()
         })
         .then(docs => res.status(200).json(docs))
         .catch(err => {
@@ -58,19 +59,36 @@ router.post('/velos', (req, res) => {
 })
 
 router.put('/velos/:id', (req, res) => {
-    const id = parseInt(req.params.id)
-    let velo = velos.find(velo => velo.recordid === id)
-    velo.name = req.body.name
-    velo.city = req.body.city
-    velo.type = req.body.type
-    res.status(200).json(velo)
+    db.collection('stations').updateOne({
+        _id: ObjectId(req.params.id)
+    }, {
+        $set : {
+            stationId: req.body.stationId,
+            city: req.body.city,
+            name: req.body.name,
+            geolocation: req.body.geolocation,
+            size: req.body.size,
+            tpe: req.body.tpe,
+            available: req.body.available,
+            updatedAt: new Date()
+        }
+    })
+        .then(docs => res.status(200).json(docs))
+        .catch(err => {
+            console.log(err)
+            throw err
+        })
 })
 
 router.delete('/velos/:id', (req, res) => {
-    const id = parseInt(req.params.id)
-    let velo = velos.find(velo => velo.recordid === id)
-    velos.splice(velos.indexOf(velo), 1)
-    res.status(200).json(velos)
+    db.collection('stations').deleteOne({
+        _id: ObjectId(req.params.id)
+    })
+        .then(docs => res.status(200).json(docs))
+        .catch(err => {
+            console.log(err)
+            throw err
+        })
 })
 
 module.exports = router
