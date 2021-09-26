@@ -15,12 +15,12 @@ const axiosRennes = axios.get('https://data.rennesmetropole.fr/api/records/1.0/s
 // MongoDB database connection
 const { MongoClient, ObjectId } = require("mongodb");
 
-let stations_static, stations_dynamic;
+let db, stations_static, stations_dynamic;
 
 MongoClient.connect(process.env.DATABASE_URI, function(err, client) {
     console.log("Connected successfully to MongoDB");
 
-    const db = client.db(process.env.DATABASE_NAME);
+    db = client.db(process.env.DATABASE_NAME);
 
     stations_static = db.collection('stations_static');
     stations_dynamic = db.collection('stations_dynamic');
@@ -32,7 +32,19 @@ MongoClient.connect(process.env.DATABASE_URI, function(err, client) {
 router.get('/static', (req, res) => {
 
     // Clear collection
-    stations_static.remove({});
+    stations_static.drop()
+        .then(() => console.log('Dropped static'))
+        .catch(err => {
+            console.log(err)
+            throw err
+        });
+    db.createCollection("stations_static")
+        .then(() => console.log('Created static'))
+        .catch(err => {
+            console.log(err)
+            throw err
+        });
+    stations_static = db.collection('stations_static');
 
     // on va charger les informations de nous 4 villes ici;
     getDLille();
@@ -40,13 +52,39 @@ router.get('/static', (req, res) => {
     //getDLyon();
     getDRennes()
 
+    // Create geospatial index
+    stations_static.createIndex({"geolocation": "2dsphere"})
+        .then(() => console.log("Created index on 'geolocation'"))
+        .catch(err => {
+            console.log(err)
+            throw err
+        });
+    stations_static.createIndex({"name": "text"})
+        .then(() => console.log("Created index on 'name'"))
+        .catch(err => {
+            console.log(err)
+            throw err
+        });
+
     res.status(200).json();
 })
 
 router.get('/dynamic', (req, res) => {
 
     // Clear collection
-    stations_dynamic.remove({});
+    stations_dynamic.drop()
+        .then(() => console.log('Dropped dynamic'))
+        .catch(err => {
+            console.log(err)
+            throw err
+        });
+    db.createCollection("stations_dynamic")
+        .then(() => console.log('Created dynamic'))
+        .catch(err => {
+            console.log(err)
+            throw err
+        });
+    stations_dynamic = db.collection('stations_dynamic');
 
     setDLille();
     setDParis();
