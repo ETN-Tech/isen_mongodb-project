@@ -1,20 +1,52 @@
-const express = require('express')
-const app = express()
-const port = 3000
+const express = require('express');
+const path = require('path');
+const cluster = require('cluster');
+const numCPUs = require('os').cpus().length;
+const dotenv = require("dotenv");
 
-app.use(express.json())
+// Configure .env file support
+dotenv.config()
 
-const api = require('./api');
-const workers = require('./workers');
+const isDev = process.env.NODE_ENV !== 'production';
+const PORT = process.env.PORT || 5000;
 
-app.get('/', (req, res) => {
-    res.send('VeloLand App up & running!')
-})
+// Multi-process to utilize all CPU cores.
+if (!isDev && cluster.isMaster) {
+    console.error(`Node cluster master ${process.pid} is running`);
 
-app.use('/api', api);
+    // Fork workers.
+    for (let i = 0; i < numCPUs; i++) {
+        cluster.fork();
+    }
 
-app.use('/workers', workers);
+    cluster.on('exit', (worker, code, signal) => {
+        console.error(`Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`);
+    });
 
-app.listen(port, () => {
-    console.log(`VeloLand App at http://localhost:${port}`)
-})
+} else {
+    const app = express();
+
+    const api = require('./api');
+    const workers = require('./workers');
+
+    // Priority serve any static files.
+    app.use(express.static(path.resolve(__dirname, '../react-ui/build')));
+
+    // Answer requests.
+    app.use(express.json())
+
+    app.get('/', (req, res) => {
+        res.send('VeloLand App up & running!')
+    })
+    app.use('/api', api);
+    app.use('/workers', workers);
+
+    // All remaining requests return the React app, so it can handle routing.
+    app.get('*', function(request, response) {
+        response.sendFile(path.resolve(__dirname, '../react-ui/build', 'index.html'));
+    });
+
+    app.listen(PORT, function () {
+        console.error(`Node ${isDev ? 'dev server' : 'cluster worker '+process.pid}: listening on port ${PORT}`);
+    });
+}
