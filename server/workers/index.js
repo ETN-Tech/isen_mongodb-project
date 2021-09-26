@@ -173,7 +173,7 @@ function GetDataVille(){
     //on va charger les informations de nous 4 villes ici;
     getDLille();
     getDParis();
-    getDLyon();
+    //getDLyon();
     getDRennes()
 }
 
