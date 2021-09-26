@@ -10,17 +10,19 @@ const axiosLille = axios.get('https://opendata.lillemetropole.fr/api/records/1.0
 const axiosParis = axios.get('https://opendata.paris.fr/api/records/1.0/search/?dataset=velib-disponibilite-en-temps-reel&q=&facet=name&facet=is_installed&facet=is_renting&facet=is_returning&facet=nom_arrondissement_communes');//api paris
 //const axiosLyon = axios.get('https://download.data.grandlyon.com/ws/rdata/sit_sitra.sittourisme/all.json?maxfeatures=100&start=1');//api lYON
 const axiosRennes = axios.get('https://data.rennesmetropole.fr/api/records/1.0/search/?dataset=etat-des-stations-le-velo-star-en-temps-reel&q=&facet=nom&facet=etat&facet=nombreemplacementsactuels&facet=nombreemplacementsdisponibles&facet=nombrevelosdisponibles');//api rennes
-/**
- * Import MongoClient & connexion à la DB
- */
-const MongoClient = require('mongodb').MongoClient;
-const url = 'mongodb://localhost:27017';
-const dbName = 'veloland';
-let db
 
-MongoClient.connect(url, function(err, client) {
+// MongoDB database connection
+const { MongoClient, ObjectId } = require("mongodb");
+
+let stations_static, stations_dynamic;
+
+MongoClient.connect(process.env.DATABASE_URI, function(err, client) {
     console.log("Connected successfully to MongoDB");
-    db = client.db(dbName);
+
+    const db = client.db(process.env.DATABASE_NAME);
+
+    stations_static = db.collection('stations_static');
+    stations_dynamic = db.collection('stations_dynamic');
 });
 
 
