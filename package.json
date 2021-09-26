@@ -6,15 +6,18 @@
         "node": "14.x"
     },
     "scripts": {
-        "start": "node index"
+        "start": "node server",
+        "build": "cd react-ui/ && npm install && npm run build"
     },
     "cacheDirectories": [
-        "node_modules"
+        "node_modules",
+        "react-ui/node_modules"
     ],
     "dependencies": {
         "axios": "^0.21.1",
         "express": "^4.17.1",
-        "mongodb": "^4.1.2"
+        "mongodb": "^4.1.2",
+        "mongojs": "^3.1.0"
     },
     "license": "MIT"
 }
