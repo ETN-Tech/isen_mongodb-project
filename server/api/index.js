@@ -1,8 +1,21 @@
 const express = require('express')
 const router = express();
 
-const velos = require('../data/vlille-realtime.json')
-const {ObjectId} = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
+
+let stations_static, stations_dynamic;
+
+MongoClient.connect(process.env.DATABASE_URI, function(err, client) {
+    console.log("Connected successfully to MongoDB");
+
+    const db = client.db(process.env.DATABASE_NAME);
+
+    stations_static = db.collection('stations_static');
+    stations_dynamic = db.collection('stations_dynamic');
+});
+
+
+/* ----- API ROUTING ----- */
 
 // Handle root
 router.get('/', function(req, res) {
@@ -11,37 +24,28 @@ router.get('/', function(req, res) {
     });
 });
 
-/**
- * Import MongoClient & connexion à la DB
- */
-const MongoClient = require('mongodb').MongoClient;
-const url = 'mongodb://localhost:27017';
-const dbName = 'veloland';
-let db
-
-MongoClient.connect(url, function(err, client) {
-    console.log("Connected successfully to MongoDB");
-    db = client.db(dbName);
-});
-
-router.get('/velos', (req, res) => {
-    db.collection('stations').find({}).toArray()
+router.get('/stations', (req, res) => {
+    stations_static.find({}).toArray()
         .then(docs => res.status(200).json(docs))
         .catch(err => {
             console.log(err)
             throw err
         })
-        //res.status(200).json(velos)
 })
 
-router.get('/velos/:id', (req, res) => {
-    const id = parseInt(req.params.id)
-    const velo = velos.find(velo => velo.recordid === id)
-    res.status(200).json(velo)
+router.get('/stations/:id', (req, res) => {
+    stations_static.find({
+        _id: ObjectId(req.params.id)
+    })
+        .then(doc => res.status(200).json(doc))
+        .catch(err => {
+            console.log(err)
+            throw err
+        })
 })
 
-router.post('/velos', (req, res) => {
-    db.collection('stations').insertOne({
+router.post('/stations', (req, res) => {
+    stations_static.insertOne({
         "stationId": req.body.stationId,
         "city": req.body.city,
         "name": req.body.name,
@@ -58,8 +62,8 @@ router.post('/velos', (req, res) => {
         })
 })
 
-router.put('/velos/:id', (req, res) => {
-    db.collection('stations').updateOne({
+router.put('/stations/:id', (req, res) => {
+    stations_static.updateOne({
         _id: ObjectId(req.params.id)
     }, {
         $set : {
@@ -80,8 +84,8 @@ router.put('/velos/:id', (req, res) => {
         })
 })
 
-router.delete('/velos/:id', (req, res) => {
-    db.collection('stations').deleteOne({
+router.delete('/stations/:id', (req, res) => {
+    stations_static.deleteOne({
         _id: ObjectId(req.params.id)
     })
         .then(docs => res.status(200).json(docs))
