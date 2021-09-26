@@ -4,7 +4,6 @@ module.exports = router
 
 const axios = require('axios');
 const {response} = require("express");
-//const velos = require('../data/vlille-realtime.json');
 
 const axiosLille = axios.get('https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&rows=10');//api lille
 const axiosParis = axios.get('https://opendata.paris.fr/api/records/1.0/search/?dataset=velib-disponibilite-en-temps-reel&q=&facet=name&facet=is_installed&facet=is_renting&facet=is_returning&facet=nom_arrondissement_communes');//api paris
@@ -31,6 +30,7 @@ router.get('/ville', (req, res) => {
     // TODO request data from VLille API
     GetDataVille();
     SetDataVille();
+
     res.status(200).json();
 })
 
@@ -46,7 +46,7 @@ function setDLille(){
             reponse.data.records.forEach(function (element){
                 var size = element.fields.nbvelosdispo + element.fields.nbplacesdispo;
                 //on charge la collection stations_dynamic_history
-                db.collection('stations_static')
+                stations_static
                     .updateOne(
                         {"stationId": element.recordid}, // Filter
                         {$set: {
@@ -67,7 +67,7 @@ function setDLille(){
                     .catch((err) => {
                         console.log('Error: ' + err);
                     })
-                    db.collection('stations_dynamic').insertOne({
+                    stations_dynamic.insertOne({
                     "stationId": element.recordid,
                     "bikesAvailable": element.fields.nbvelosdispo,
                     "docksAvailable": element.fields.nbplacesdispo,
@@ -89,7 +89,7 @@ function setDParis(){
     axiosParis.then(reponse => {
         reponse.data.records.forEach(function (element){
             //on charge la collection stations_dynamic_history
-            db.collection('stations_static')
+            stations_static
                 .updateOne(
                     {"stationId": element.recordid}, // Filter
                     {$set: {
@@ -113,7 +113,7 @@ function setDParis(){
 
             //on charge la collection stations_dynamic
             var bikesAvailable = element.fields.capacity - element.fields.numdocksavailable;
-            db.collection('stations_dynamic').insertOne({
+            stations_dynamic.insertOne({
                 "stationId": element.recordid,
                 "bikesAvailable": bikesAvailable,
                 "docksAvailable": element.fields.numdocksavailable,
@@ -133,7 +133,7 @@ function setDRennes(){
     axiosRennes.then(reponse => {
         reponse.data.records.forEach(function (element){
             //on charge la collection stations_dynamic_history
-            db.collection('stations_static')
+            stations_static
                 .updateOne(
                     {"stationId": element.recordid}, // Filter
                     {$set: {
@@ -155,7 +155,7 @@ function setDRennes(){
                 })
 
             //on charge la collection stations_dynamic
-            db.collection('stations_dynamic').insertOne({
+            stations_dynamic.insertOne({
                 "stationId": element.recordid,
                 "bikesAvailable": element.fields.nombrevelosdisponibles,
                 "docksAvailable": element.fields.nombreemplacementsdisponibles,
@@ -183,7 +183,7 @@ function getDLille(){
         response.data.records.forEach(function (element){
             var size = element.fields.nbvelosdispo + element.fields.nbplacesdispo;
             //on charge la collection stations_static
-            db.collection('stations_static').insertOne({
+            stations_static.insertOne({
                 "stationId": element.recordid,
                 "city": element.fields.commune.toUpperCase(),
                 "name": element.fields.nom.toUpperCase(),
@@ -195,7 +195,7 @@ function getDLille(){
             })
 
             //on charge la collection stations_dynamic
-            db.collection('stations_dynamic').insertOne({
+            stations_dynamic.insertOne({
                 "stationStaticId": element.recordid,
                 "bikesAvailable": element.fields.nbvelosdispo,
                 "docksAvailable": element.fields.nbplacesdispo,
@@ -210,7 +210,7 @@ function getDParis(){
         response.data.records.forEach(function (element){
 
             //on charge la collection stations_static
-            db.collection('stations_static').insertOne({
+            stations_static.insertOne({
                 "stationId": element.recordid,
                 "city": element.fields.nom_arrondissement_communes.toUpperCase(),
                 "name": element.fields.name.toUpperCase(),
@@ -223,7 +223,7 @@ function getDParis(){
 
             //on charge la collection stations_dynamic
             var bikesAvailable = element.fields.capacity - element.fields.numdocksavailable;
-            db.collection('stations_dynamic').insertOne({
+            stations_dynamic.insertOne({
                 "stationStaticId": element.recordid,
                 "bikesAvailable": bikesAvailable,
                 "docksAvailable": element.fields.numdocksavailable,
@@ -237,7 +237,7 @@ function getDLyon(){
     axiosLyon.then( response => {
         response.data.forEach(function (element){
             //on charge la collection stations_static
-            db.collection('stations_static').insertOne({
+            stations_static.insertOne({
                 "stationId": element.number,
                 "city": element.contractName.toUpperCase(),
                 "name": element.name.toUpperCase(),
@@ -249,7 +249,7 @@ function getDLyon(){
             })
 
             //on charge la collection stations_dynamic
-            db.collection('stations_dynamic').insertOne({
+            stations_dynamic.insertOne({
                 "stationStaticId": element.number,
                 "bikesAvailable": element.totalStands.availabilities.bikes,
                 "docksAvailable": element.totalStands.availabilities.stands,
@@ -265,7 +265,7 @@ function getDRennes(){
     axiosRennes.then( response => {
         response.data.records.forEach(function (element){
             //on charge la collection stations_static
-            db.collection('stations_static').insertOne({
+            stations_static.insertOne({
                 "stationId": element.recordid,
                 "city": city.toUpperCase(),
                 "name": element.fields.nom.toUpperCase(),
@@ -277,7 +277,7 @@ function getDRennes(){
             })
 
             //on charge la collection stations_dynamic
-            db.collection('stations_dynamic').insertOne({
+            stations_dynamic.insertOne({
                 "stationStaticId": element.recordid,
                 "bikesAvailable": element.fields.nombrevelosdisponibles,
                 "docksAvailable": element.fields.nombreemplacementsdisponibles,
