@@ -72,27 +72,22 @@ router.get('/static', (req, res) => {
 router.get('/dynamic', (req, res) => {
 
     // Clear collection
-    stations_dynamic.drop()
-        .then(() => console.log('Dropped dynamic'))
-        .catch(err => {
-            console.log(err)
-            throw err
-        });
-    db.createCollection("stations_dynamic")
-        .then(() => console.log('Created dynamic'))
-        .catch(err => {
-            console.log(err)
-            throw err
-        });
-    stations_dynamic = db.collection('stations_dynamic');
 
-    setDLille();
-    setDParis();
-    setDRennes();
-    setDLyon();
+    stations_dynamic = db.collection('stations_dynamic');
+    setVille();
 
     res.status(200).json();
 })
+
+
+/*router.get('/test', (req, res) => {
+
+    while(true) {
+        const timer = ms => new Promise( res => setTimeout(res, ms));
+        console.log("wait 3 seconds")
+        timer(3000).then(_=>console.log("done"));
+    }
+})*/
 
 
 /* ----- FUNCTIONS ----- */
@@ -166,7 +161,7 @@ function getDLyon(){
                 "size": element.bike_stands,
                 "tpe": element.banking,
                 "available": element.status.includes("OPEN"),
-                "updatedAt": element.lastUpdate
+                "updatedAt": new Date()
             })
 
             //on charge la collection stations_dynamic
@@ -174,7 +169,7 @@ function getDLyon(){
                 "stationStaticId": element.number,
                 "bikesAvailable": element.available_bikes,
                 "docksAvailable": element.available_bike_stands,
-                "createdAt": element.lastUpdate
+                "createdAt": new Date()
             })
         })
     })
@@ -194,7 +189,7 @@ function getDRennes(){
                 "size": element.fields.nombreemplacementsactuels,
                 "tpe": tpe,
                 "available": null,
-                "updatedAt": element.fields.lastupdate
+                "updatedAt": new Date()
             })
 
             //on charge la collection stations_dynamic
@@ -202,41 +197,27 @@ function getDRennes(){
                 "stationStaticId": element.recordid,
                 "bikesAvailable": element.fields.nombrevelosdisponibles,
                 "docksAvailable": element.fields.nombreemplacementsdisponibles,
-                "createdAt": element.fields.lastupdate
+                "createdAt": new Date()
             })
         })
     })
 }
 
+function setVille(){
+
+    setDLille();
+    setDParis();
+    setDRennes();
+    setDLyon();
+    //setTimeout('setVille',2000);
+}
 
 function setDLille(){
     axiosLille.then(reponse => {
         reponse.data.records.forEach(function (element){
-            var size = element.fields.nbvelosdispo + element.fields.nbplacesdispo;
             //on charge la collection stations_dynamic_history
-            stations_static
-                .updateOne(
-                    {"stationId": element.recordid}, // Filter
-                    {$set: {
-
-                            "city": element.fields.commune.toUpperCase(),
-                            "name": element.fields.nom.toUpperCase(),
-                            "geolocation": element.fields.localisation,
-                            "size": size,
-                            "tpe": element.fields.type.includes("AVEC TPE"),
-                            "available": null,
-                            "updatedAt": element.fields.datemiseajour
-                        }} // Update
-                )
-                .then((obj) => {
-                    console.log('Updated - ' + obj);
-                    response.redirect('orders')
-                })
-                .catch((err) => {
-                    console.log('Error: ' + err);
-                })
             stations_dynamic.insertOne({
-                "stationId": element.recordid,
+                "stationStaticId": element.recordid,
                 "bikesAvailable": element.fields.nbvelosdispo,
                 "docksAvailable": element.fields.nbplacesdispo,
                 "createdAt": element.fields.datemiseajour
@@ -247,42 +228,16 @@ function setDLille(){
 
 
     })
-
-        .catch(error => {
-            console.log(error);
-        });
 }
 
 function setDParis(){
     axiosParis.then(reponse => {
         reponse.data.records.forEach(function (element){
-            //on charge la collection stations_dynamic_history
-            stations_static
-                .updateOne(
-                    {"stationId": element.recordid}, // Filter
-                    {$set: {
-                            "city": element.fields.nom_arrondissement_communes.toUpperCase(),
-                            "name": element.fields.name.toUpperCase(),
-                            "geolocation": element.fields.coordonnees_geo,
-                            "size": element.fields.capacity,
-                            "tpe": element.fields.is_renting.includes("OUI"),
-                            "available": element.fields.is_installed.includes("OUI"),
-                            "updatedAt": element.record_timestamp
-                        }} // Update
-                )
-                .then((obj) => {
-                    console.log('Updated - ' + obj);
-                    response.redirect('orders')
-                })
-                .catch((err) => {
-                    console.log('Error: ' + err);
-                })
-
-
+            //on charge la collection stations_dynamic
             //on charge la collection stations_dynamic
             var bikesAvailable = element.fields.capacity - element.fields.numdocksavailable;
             stations_dynamic.insertOne({
-                "stationId": element.recordid,
+                "stationStaticId": element.recordid,
                 "bikesAvailable": bikesAvailable,
                 "docksAvailable": element.fields.numdocksavailable,
                 "createdAt": element.record_timestamp
@@ -290,93 +245,36 @@ function setDParis(){
 
         })
     })
-        .catch(error => {
-            console.log(error);
-        });
 }
 
 function setDRennes(){
-    var city = "RENNES";
-    var tpe = false;
+
     axiosRennes.then(reponse => {
         reponse.data.records.forEach(function (element){
-            //on charge la collection stations_dynamic_history
-            stations_static
-                .updateOne(
-                    {"stationId": element.recordid}, // Filter
-                    {$set: {
-                            "city": city.toUpperCase(),
-                            "name": element.fields.nom.toUpperCase(),
-                            "geolocation": element.fields.coordonnees,
-                            "size": element.fields.nombreemplacementsactuels,
-                            "tpe": tpe,
-                            "available": null,
-                            "updatedAt": element.fields.lastupdate
-                        }} // Update
-                )
-                .then((obj) => {
-                    console.log('Updated - ' + obj);
-                    response.redirect('orders')
-                })
-                .catch((err) => {
-                    console.log('Error: ' + err);
-                })
-
             //on charge la collection stations_dynamic
             stations_dynamic.insertOne({
-                "stationId": element.recordid,
+                "stationStaticId": element.recordid,
                 "bikesAvailable": element.fields.nombrevelosdisponibles,
                 "docksAvailable": element.fields.nombreemplacementsdisponibles,
-                "createdAt": element.fields.lastupdate
+                "createdAt": new Date()
             })
 
         })
     })
-        .catch(error => {
-            console.log(error);
-        });
 }
 
 function setDLyon(){
     axiosLyon.then(reponse => {
         reponse.data.forEach(function (element){
-            //on charge la collection stations_dynamic_history
-            stations_static
-                .updateOne(
-                    {"stationId": element.recordid}, // Filter
-                    {$set: {
-
-                            "stationId": element.number,
-                            "city": element.contract_name.toUpperCase(),
-                            "name": element.name.toUpperCase(),
-                            "geolocation": element.position,
-                            "size": element.bike_stands,
-                            "tpe": element.banking,
-                            "available": element.status.includes("OPEN"),
-                            "updatedAt": element.lastUpdate
-                        }} // Update
-                )
-                .then((obj) => {
-                    console.log('Updated - ' + obj);
-                    response.redirect('orders')
-                })
-                .catch((err) => {
-                    console.log('Error: ' + err);
-                })
+            //on charge la collection stations_dynamic
             stations_dynamic.insertOne({
                 "stationStaticId": element.number,
                 "bikesAvailable": element.available_bikes,
                 "docksAvailable": element.available_bike_stands,
-                "createdAt": element.lastUpdate
+                "createdAt": new Date()
             })
+
         })
 
-        //on charge la collection stations_dynamic
-
-
     })
-
-        .catch(error => {
-            console.log(error);
-        });
 }
