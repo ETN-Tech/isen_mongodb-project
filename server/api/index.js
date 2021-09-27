@@ -66,6 +66,12 @@ router.get('/stations/near/:longitude/:latitude', (req, res) => {
                 foreignField: "stationStaticId",
                 as: "data"
             }
+        },
+        {
+            $project: {
+                name: 1,
+                data: 1
+            }
         }
     ]).toArray()
         .then(docs => res.status(200).json(docs))
@@ -172,7 +178,7 @@ router.put('/stations/:id', (req, res) => {
 
 router.delete('/stations/:id', (req, res) => {
     stations_static.deleteOne({
-        _id: ObjectId(req.params.id)
+        stationId: req.params.id
     })
         .then(docs => res.status(200).json(docs))
         .catch(err => {
@@ -180,7 +186,14 @@ router.delete('/stations/:id', (req, res) => {
             throw err
         })
 
-    stations_dynamic.de
+    stations_dynamic.deleteMany({
+        stationStaticId: req.params.id
+    })
+        .then(docs => res.status(200).json(docs))
+        .catch(err => {
+            console.log(err)
+            throw err
+        })
 })
 
 module.exports = router

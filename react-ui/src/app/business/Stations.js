@@ -32,7 +32,7 @@ function Stations() {
     }
 
     function updateStation(searchText) {
-        axios.put( process.env.REACT_APP_API_HOST+ "/api/stations/" + id, {
+        axios.put( process.env.REACT_APP_API_HOST+ "/api/stations/" + station.stationId, {
             stationId: station.stationId,
             city: station.city,
             name: stationName,
