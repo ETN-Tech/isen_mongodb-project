@@ -2,9 +2,12 @@ const express = require('express');
 const path = require('path');
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
-const dotenv = require("dotenv");
+
+// CORS support
+const cors = require('cors');
 
 // Configure .env file support
+const dotenv = require("dotenv");
 dotenv.config()
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -28,6 +31,17 @@ if (!isDev && cluster.isMaster) {
 
     const api = require('./api');
     const workers = require('./workers');
+
+    // Allow CORS options
+    const corsOptions = {
+        origin: '*',
+        methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Origin', 'X-Requested-With', 'Content', 'Accept', 'Content-Type', 'x-xsrf-token'],
+        exposedHeaders: ["Set-Cookie"],
+        credentials: true,
+        optionsSuccessStatus: 200
+    };
+    app.use(cors(corsOptions));
 
     // Priority serve any static files.
     app.use(express.static(path.resolve(__dirname, '../react-ui/build')));
