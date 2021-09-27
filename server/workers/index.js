@@ -8,7 +8,7 @@ const {response} = require("express");
 
 const axiosLille = axios.get('https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&rows=10');//api lille
 const axiosParis = axios.get('https://opendata.paris.fr/api/records/1.0/search/?dataset=velib-disponibilite-en-temps-reel&q=&facet=name&facet=is_installed&facet=is_renting&facet=is_returning&facet=nom_arrondissement_communes');//api paris
-//const axiosLyon = axios.get('https://download.data.grandlyon.com/ws/rdata/sit_sitra.sittourisme/all.json?maxfeatures=100&start=1');//api lYON
+const axiosLyon = axios.get('https://api.jcdecaux.com/vls/v1/stations?contract=Lyon&apiKey=51fa7fac045a1eb38ee6a6cc8f4c05509c0a9a08');//api lYON
 const axiosRennes = axios.get('https://data.rennesmetropole.fr/api/records/1.0/search/?dataset=etat-des-stations-le-velo-star-en-temps-reel&q=&facet=nom&facet=etat&facet=nombreemplacementsactuels&facet=nombreemplacementsdisponibles&facet=nombrevelosdisponibles');//api rennes
 
 
@@ -49,7 +49,7 @@ router.get('/static', (req, res) => {
     // on va charger les informations de nous 4 villes ici;
     getDLille();
     getDParis();
-    //getDLyon();
+    getDLyon();
     getDRennes()
 
     // Create geospatial index
@@ -89,6 +89,7 @@ router.get('/dynamic', (req, res) => {
     setDLille();
     setDParis();
     setDRennes();
+    setDLyon();
 
     res.status(200).json();
 })
@@ -100,6 +101,7 @@ function getDLille(){
     axiosLille.then( response => {
         response.data.records.forEach(function (element){
             var size = element.fields.nbvelosdispo + element.fields.nbplacesdispo;
+
             //on charge la collection stations_static
             stations_static.insertOne({
                 "stationId": element.recordid,
@@ -128,9 +130,10 @@ function getDParis(){
         response.data.records.forEach(function (element){
 
             //on charge la collection stations_static
+            var city = "PARIS";
             stations_static.insertOne({
                 "stationId": element.recordid,
-                "city": element.fields.nom_arrondissement_communes.toUpperCase(),
+                "city": city,
                 "name": element.fields.name.toUpperCase(),
                 "geolocation": element.fields.coordonnees_geo,
                 "size": element.fields.capacity,
@@ -157,20 +160,20 @@ function getDLyon(){
             //on charge la collection stations_static
             stations_static.insertOne({
                 "stationId": element.number,
-                "city": element.contractName.toUpperCase(),
+                "city": element.contract_name.toUpperCase(),
                 "name": element.name.toUpperCase(),
                 "geolocation": element.position,
-                "size": element.totalStands.capacity,
+                "size": element.bike_stands,
                 "tpe": element.banking,
-                "available": element.connected,
+                "available": element.status.includes("OPEN"),
                 "updatedAt": element.lastUpdate
             })
 
             //on charge la collection stations_dynamic
             stations_dynamic.insertOne({
                 "stationStaticId": element.number,
-                "bikesAvailable": element.totalStands.availabilities.bikes,
-                "docksAvailable": element.totalStands.availabilities.stands,
+                "bikesAvailable": element.available_bikes,
+                "docksAvailable": element.available_bike_stands,
                 "createdAt": element.lastUpdate
             })
         })
@@ -329,6 +332,50 @@ function setDRennes(){
 
         })
     })
+        .catch(error => {
+            console.log(error);
+        });
+}
+
+function setDLyon(){
+    axiosLyon.then(reponse => {
+        reponse.data.forEach(function (element){
+            //on charge la collection stations_dynamic_history
+            stations_static
+                .updateOne(
+                    {"stationId": element.recordid}, // Filter
+                    {$set: {
+
+                            "stationId": element.number,
+                            "city": element.contract_name.toUpperCase(),
+                            "name": element.name.toUpperCase(),
+                            "geolocation": element.position,
+                            "size": element.bike_stands,
+                            "tpe": element.banking,
+                            "available": element.status.includes("OPEN"),
+                            "updatedAt": element.lastUpdate
+                        }} // Update
+                )
+                .then((obj) => {
+                    console.log('Updated - ' + obj);
+                    response.redirect('orders')
+                })
+                .catch((err) => {
+                    console.log('Error: ' + err);
+                })
+            stations_dynamic.insertOne({
+                "stationStaticId": element.number,
+                "bikesAvailable": element.available_bikes,
+                "docksAvailable": element.available_bike_stands,
+                "createdAt": element.lastUpdate
+            })
+        })
+
+        //on charge la collection stations_dynamic
+
+
+    })
+
         .catch(error => {
             console.log(error);
         });
