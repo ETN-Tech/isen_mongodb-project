@@ -76,7 +76,7 @@ router.get('/stations/near/:longitude/:latitude', (req, res) => {
 })
 
 router.get('/stations/:id', (req, res) => {
-    stations_static.find({
+    stations_static.findOne({
         _id: ObjectId(req.params.id)
     })
         .then(doc => res.status(200).json(doc))
@@ -179,6 +179,8 @@ router.delete('/stations/:id', (req, res) => {
             console.log(err)
             throw err
         })
+
+    stations_dynamic.de
 })
 
 module.exports = router
