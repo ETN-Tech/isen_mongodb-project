@@ -3,7 +3,6 @@ const router = express();
 module.exports = router
 
 const axios = require('axios');
-const {response} = require("express");
 
 
 const axiosLille = axios.get('https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&rows=10');//api lille
@@ -13,7 +12,7 @@ const axiosRennes = axios.get('https://data.rennesmetropole.fr/api/records/1.0/s
 
 
 // MongoDB database connection
-const { MongoClient, ObjectId } = require("mongodb");
+const { MongoClient } = require("mongodb");
 
 let db, stations_static, stations_dynamic;
 
@@ -30,7 +29,21 @@ MongoClient.connect(process.env.DATABASE_URI, function(err, client) {
 /* ---- API ROUTING ----- */
 
 router.get('/static', (req, res) => {
+    createStaticDb();
 
+    res.status(200).json();
+})
+
+router.get('/dynamic', (req, res) => {
+    updateDynamicDb();
+
+    res.status(200).json();
+})
+
+
+/* ----- ENTRYPOINT FUNCTIONS ----- */
+
+function createStaticDb() {
     // Clear collection
     stations_static.drop()
         .then(() => console.log('Dropped static'))
@@ -46,7 +59,7 @@ router.get('/static', (req, res) => {
         });
     stations_static = db.collection('stations_static');
 
-    // on va charger les informations de nous 4 villes ici;
+    // charger les informations des 4 villes
     getDLille();
     getDParis();
     getDLyon();
@@ -65,32 +78,18 @@ router.get('/static', (req, res) => {
             console.log(err)
             throw err
         });
+}
 
-    res.status(200).json();
-})
+function updateDynamicDb(){
 
-router.get('/dynamic', (req, res) => {
-
-    // Clear collection
-
-    stations_dynamic = db.collection('stations_dynamic');
-    setVille();
-
-    res.status(200).json();
-})
+    setDLille();
+    setDParis();
+    setDRennes();
+    setDLyon();
+}
 
 
-/*router.get('/test', (req, res) => {
-
-    while(true) {
-        const timer = ms => new Promise( res => setTimeout(res, ms));
-        console.log("wait 3 seconds")
-        timer(3000).then(_=>console.log("done"));
-    }
-})*/
-
-
-/* ----- FUNCTIONS ----- */
+/* ----- PRIVATE FUNCTIONS ----- */
 
 function getDLille(){
     axiosLille.then( response => {
@@ -201,15 +200,6 @@ function getDRennes(){
             })
         })
     })
-}
-
-function setVille(){
-
-    setDLille();
-    setDParis();
-    setDRennes();
-    setDLyon();
-    //setTimeout('setVille',2000);
 }
 
 function setDLille(){
