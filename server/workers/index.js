@@ -86,6 +86,21 @@ function updateDynamicDb(){
     setDParis();
     setDRennes();
     setDLyon();
+
+    stations_static.find({}).toArray().forEach(station => {
+        if (station.city === "LILLE") {
+
+        }
+        else if (station.city === "PARIS") {
+
+        }
+        else if (station.city === "RENNES") {
+
+        }
+        else if (station.city === "LYON") {
+            getDLyon(station.stationId);
+        }
+    })
 }
 
 
@@ -99,12 +114,12 @@ function getDLille(){
             //on charge la collection stations_static
             stations_static.insertOne({
                 "stationId": element.recordid,
-                "city": element.fields.commune.toUpperCase(),
+                "city": "LILLE",
                 "name": element.fields.nom.toUpperCase(),
                 "geolocation": element.fields.localisation,
                 "size": size,
                 "tpe": element.fields.type.includes("AVEC TPE"),
-                "available": null,
+                "available": true,
                 "updatedAt": element.fields.datemiseajour
             })
 
@@ -124,10 +139,9 @@ function getDParis(){
         response.data.records.forEach(function (element){
 
             //on charge la collection stations_static
-            var city = "PARIS";
             stations_static.insertOne({
                 "stationId": element.recordid,
-                "city": city,
+                "city": "PARIS",
                 "name": element.fields.name.toUpperCase(),
                 "geolocation": element.fields.coordonnees_geo,
                 "size": element.fields.capacity,
@@ -175,19 +189,17 @@ function getDLyon(){
 }
 
 function getDRennes(){
-    var city = "RENNES";
-    var tpe = false;
     axiosRennes.then( response => {
         response.data.records.forEach(function (element){
             //on charge la collection stations_static
             stations_static.insertOne({
                 "stationId": element.recordid,
-                "city": city.toUpperCase(),
+                "city": "RENNES",
                 "name": element.fields.nom.toUpperCase(),
                 "geolocation": element.fields.coordonnees,
                 "size": element.fields.nombreemplacementsactuels,
-                "tpe": tpe,
-                "available": null,
+                "tpe": false,
+                "available": true,
                 "updatedAt": new Date()
             })
 
