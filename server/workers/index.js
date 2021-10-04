@@ -120,16 +120,16 @@ function updateDynamicDb (){
             // update each station dynamic infos
             stations.forEach(station => {
                 if (station.city === "LILLE") {
-                    createRecordLille(station.stationId);
+                    createRecordLille(station.stationId, station._id);
                 }
                 else if (station.city === "PARIS") {
-                    createRecordParis(station.stationId);
+                    createRecordParis(station.stationId, station._id);
                 }
                 else if (station.city === "RENNES") {
-                    createRecordRennes(station.stationId);
+                    createRecordRennes(station.stationId, station._id);
                 }
                 else if (station.city === "LYON") {
-                    createRecordLyon(station.stationId);
+                    createRecordLyon(station.stationId, station._id);
                 }
             })
 
@@ -236,13 +236,13 @@ function createStaticRennes() {
 
 /* CREATE RECORDS (DYNAMIC) */
 
-function createRecordLille(stationId) {
+function createRecordLille(stationId, stationStaticId) {
     axios.get('https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&refine.libelle='+ stationId)
         .then(res => {
             const elem = res.data.records[0];
 
             stations_dynamic.insertOne({
-                "stationStaticId": elem.fields.libelle,
+                "stationStaticId": stationStaticId,
                 "bikesAvailable": elem.fields.nbvelosdispo,
                 "docksAvailable": elem.fields.nbplacesdispo,
                 "createdAt": elem.fields.datemiseajour
@@ -255,13 +255,13 @@ function createRecordLille(stationId) {
         });
 }
 
-function createRecordParis(stationId) {
+function createRecordParis(stationId, stationStaticId) {
     axios.get('https://opendata.paris.fr/api/records/1.0/search/?dataset=velib-disponibilite-en-temps-reel&q=&refine.stationcode='+ stationId)
         .then(res => {
             const elem = res.data.records[0];
 
             stations_dynamic.insertOne({
-                "stationStaticId": elem.fields.stationcode,
+                "stationStaticId": stationStaticId,
                 "bikesAvailable": elem.fields.capacity - elem.fields.numdocksavailable,
                 "docksAvailable": elem.fields.numdocksavailable,
                 "createdAt": elem.record_timestamp
@@ -274,13 +274,13 @@ function createRecordParis(stationId) {
         });
 }
 
-function createRecordLyon(stationId) {
+function createRecordLyon(stationId, stationStaticId) {
     axios.get('https://api.jcdecaux.com/vls/v3/stations/'+ stationId +'?contract=Lyon&apiKey=51fa7fac045a1eb38ee6a6cc8f4c05509c0a9a08')
         .then(res => {
             const elem = res.data;
 
             stations_dynamic.insertOne({
-                "stationStaticId": elem.number,
+                "stationStaticId": stationStaticId,
                 "bikesAvailable": elem.available_bikes,
                 "docksAvailable": elem.available_bike_stands,
                 "createdAt": new Date()
@@ -293,13 +293,13 @@ function createRecordLyon(stationId) {
         });
 }
 
-function createRecordRennes(stationId) {
+function createRecordRennes(stationId, stationStaticId) {
     axios.get('https://data.rennesmetropole.fr/api/records/1.0/search/?dataset=stations_vls&q=&refine.idstation='+ stationId)
         .then(res => {
             const elem = res.data.records[0];
 
             stations_dynamic.insertOne({
-                "stationStaticId": parseInt(elem.fields.idstation),
+                "stationStaticId": stationStaticId,
                 "bikesAvailable": elem.fields.nombrevelosdisponibles,
                 "docksAvailable": elem.fields.nombreemplacementsdisponibles,
                 "createdAt": new Date()
