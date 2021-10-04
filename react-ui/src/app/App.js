@@ -1,5 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import {BrowserRouter, Route, Switch} from "react-router-dom";
+
+import "bootstrap/dist/css/bootstrap.min.css";
 
 import Client from "./client/Client";
 import Business from "./business/Business";
@@ -12,18 +14,18 @@ function App() {
     <BrowserRouter>
       <Switch>
         <Route exact path='/'>
-          <Home></Home>
+          <Home/>
         </Route>
 
         <Route exact path='/client'>
-          <Client></Client>
+          <Client/>
         </Route>
 
         <Route exact path='/business'>
-          <Business></Business>
+          <Business/>
         </Route>
         <Route path='/business/stations/:id'>
-          <Stations></Stations>
+          <Stations/>
         </Route>
       </Switch>
     </BrowserRouter>
