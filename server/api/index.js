@@ -34,12 +34,23 @@ router.get('/stations', (req, res) => {
 })
 
 router.get('/stations/find/:name', (req, res) => {
-    stations_static.find({
-        "name": {
-            $regex: req.params.name,
-            $options: "ix"
+    stations_static.aggregate([
+        {
+            $match: {
+                name: {
+                    $regex: decodeURIComponent(req.params.name),
+                    $options: "i"
+                }
+            }
+        },
+        {
+            $project: {
+                city: 1,
+                name: 1,
+                geolocation: 1
+            }
         }
-    }).toArray()
+    ]).toArray()
         .then(docs => res.status(200).json(docs))
         .catch(err => {
             console.log(err)
@@ -56,7 +67,7 @@ router.get('/stations/near/:longitude/:latitude', (req, res) => {
                     type: "Point",
                     coordinates: [parseFloat(req.params.longitude), parseFloat(req.params.latitude)]
                 },
-                maxDistance: 1500 // max distance in meters
+                maxDistance: 2000 // max distance in meters
             }
         },
         {
