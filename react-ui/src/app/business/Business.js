@@ -10,12 +10,14 @@ function Business() {
     const [ y2, setY2 ] = useState(0);
 
     function findStationByName(searchText) {
-        axios.get( process.env.REACT_APP_API_HOST+ "/api/stations/find/" + encodeURIComponent(searchText))
-            .then(res => {
-                console.log(searchText)
-                setStationResults(res.data)
-            })
-            .catch(err => console.log(err));
+        if (searchText) {
+            axios.get( process.env.REACT_APP_API_HOST+ "/api/stations/find/" + searchText)
+                .then(res => {
+                    console.log(searchText)
+                    setStationResults(res.data)
+                })
+                .catch(err => console.log(err));
+        }
     }
 
     function deactivateStations() {
