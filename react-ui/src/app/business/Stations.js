@@ -47,7 +47,10 @@ function Stations() {
 
     function deleteStation() {
         axios.delete(process.env.REACT_APP_API_HOST+ "/api/stations/" + id)
-            .then(res => console.log(res))
+            .then(res => {
+                console.log(res)
+                window.location.replace("/business");
+            })
             .catch(err => console.log(err));
     }
 

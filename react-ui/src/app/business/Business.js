@@ -5,7 +5,7 @@ function Business() {
     const [ stationResults, setStationResults ] = useState([]);
 
     function findStationByName(searchText) {
-        axios.get( process.env.REACT_APP_API_HOST+ "/api/stations/find/" + searchText)
+        axios.get( process.env.REACT_APP_API_HOST+ "/api/stations/find/" + encodeURIComponent(searchText))
             .then(res => {
                 console.log(searchText)
                 setStationResults(res.data)
@@ -18,7 +18,7 @@ function Business() {
             <h1>Business App</h1>
 
             <h2>Find station by name</h2>
-            <input type="text" id="search" onChange={e => findStationByName(e.target.value)} />
+            <input type="text" id="search" placeholder='Type something' onChange={e => findStationByName(e.target.value)} />
 
             {stationResults.map(station => (
                 <div key={station._id}>
