@@ -158,7 +158,7 @@ function createStaticLille() {
                     "size": elem.fields.nbvelosdispo + elem.fields.nbplacesdispo,
                     "tpe": elem.fields.type.includes("AVEC TPE"),
                     "available": true,
-                    "updatedAt": elem.fields.datemiseajour
+                    "createdAt": new Date()
                 })
             })
         })
@@ -180,7 +180,7 @@ function createStaticParis() {
                     "size": elem.fields.capacity,
                     "tpe": elem.fields.is_renting.includes("OUI"),
                     "available": elem.fields.is_installed.includes("OUI"),
-                    "updatedAt": elem.record_timestamp
+                    "createdAt": new Date()
                 })
             })
         })
@@ -202,7 +202,7 @@ function createStaticLyon() {
                     "size": elem.bike_stands,
                     "tpe": elem.banking,
                     "available": elem.status.includes("OPEN"),
-                    "updatedAt": new Date()
+                    "createdAt": new Date()
                 })
             })
         })
@@ -224,7 +224,7 @@ function createStaticRennes() {
                     "size": elem.fields.nombreemplacementsactuels,
                     "tpe": false,
                     "available": true,
-                    "updatedAt": new Date()
+                    "createdAt": new Date()
                 })
             })
         })
@@ -245,7 +245,7 @@ function createRecordLille(stationId, stationStaticId) {
                 "stationStaticId": stationStaticId,
                 "bikesAvailable": elem.fields.nbvelosdispo,
                 "docksAvailable": elem.fields.nbplacesdispo,
-                "createdAt": elem.fields.datemiseajour
+                "createdAt": new Date()
             })
         })
         .catch(err => {
@@ -264,7 +264,7 @@ function createRecordParis(stationId, stationStaticId) {
                 "stationStaticId": stationStaticId,
                 "bikesAvailable": elem.fields.capacity - elem.fields.numdocksavailable,
                 "docksAvailable": elem.fields.numdocksavailable,
-                "createdAt": elem.record_timestamp
+                "createdAt": new Date()
             })
         })
         .catch(err => {
