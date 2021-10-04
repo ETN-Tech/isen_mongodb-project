@@ -178,7 +178,7 @@ router.put('/stations/:id', (req, res) => {
 
 router.delete('/stations/:id', (req, res) => {
     stations_static.deleteOne({
-        stationId: req.params.id
+        "stationId": req.params.id
     })
         .then(docs => res.status(200).json(docs))
         .catch(err => {
@@ -187,7 +187,7 @@ router.delete('/stations/:id', (req, res) => {
         })
 
     stations_dynamic.deleteMany({
-        stationStaticId: req.params.id
+        "stationStaticId": req.params.id
     })
         .then(docs => res.status(200).json(docs))
         .catch(err => {
