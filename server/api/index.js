@@ -178,7 +178,7 @@ router.put('/stations/:id', (req, res) => {
 
 router.delete('/stations/:id', (req, res) => {
     stations_static.deleteOne({
-        "stationId": req.params.id
+        _id: ObjectId(req.params.id)
     })
         .then(docs => res.status(200).json(docs))
         .catch(err => {
