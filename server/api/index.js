@@ -191,16 +191,16 @@ router.delete('/stations/:id', (req, res) => {
     stations_static.deleteOne({
         _id: ObjectId(req.params.id)
     })
-        .then(docs => res.status(200).json(docs))
-        .catch(err => {
-            console.log(err)
-            throw err
+        .then(_ => {
+            stations_dynamic.deleteMany({
+                "stationStaticId": req.params.id
+            })
+                .then(docs => res.status(200).json(docs))
+                .catch(err => {
+                    console.log(err)
+                    throw err
+                })
         })
-
-    stations_dynamic.deleteMany({
-        "stationStaticId": req.params.id
-    })
-        .then(docs => res.status(200).json(docs))
         .catch(err => {
             console.log(err)
             throw err

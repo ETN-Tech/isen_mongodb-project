@@ -113,7 +113,7 @@ function createStaticDb() {
 }
 
 function updateDynamicDb (){
-    console.log('Updating dynamic...');
+    console.log('> Updating dynamic at '+ new Date());
 
     stations_static.find({}).toArray()
         .then(stations => {
