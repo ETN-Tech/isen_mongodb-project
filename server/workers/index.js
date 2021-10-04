@@ -201,7 +201,7 @@ function createStaticRennes() {
         .then(res => {
             res.data.records.forEach(elem => {
                 stations_static.insertOne({
-                    "stationId": elem.fields.idstation,
+                    "stationId": parseInt(elem.fields.idstation),
                     "city": "RENNES",
                     "name": elem.fields.nom.toUpperCase(),
                     "geolocation": elem.fields.coordonnees,
@@ -219,13 +219,11 @@ function createStaticRennes() {
 function createRecordLille(stationId) {
     axios.get('https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&refine.libelle='+ stationId)
         .then(res => {
-            res.data.records.forEach(elem => {
-                stations_dynamic.insertOne({
-                    "stationStaticId": elem.recordid,
-                    "bikesAvailable": elem.fields.nbvelosdispo,
-                    "docksAvailable": elem.fields.nbplacesdispo,
-                    "createdAt": elem.fields.datemiseajour
-                })
+            stations_dynamic.insertOne({
+                "stationStaticId": res.data.fields.libelle,
+                "bikesAvailable": res.data.fields.nbvelosdispo,
+                "docksAvailable": res.data.fields.nbplacesdispo,
+                "createdAt": res.data.fields.datemiseajour
             })
         })
 }
@@ -233,13 +231,11 @@ function createRecordLille(stationId) {
 function createRecordParis(stationId) {
     axios.get('https://opendata.paris.fr/api/records/1.0/search/?dataset=velib-disponibilite-en-temps-reel&q=&refine.stationcode='+ stationId)
         .then(res => {
-            res.data.records.forEach(elem => {
-                stations_dynamic.insertOne({
-                    "stationStaticId": elem.recordid,
-                    "bikesAvailable": elem.fields.capacity - elem.fields.numdocksavailable,
-                    "docksAvailable": elem.fields.numdocksavailable,
-                    "createdAt": elem.record_timestamp
-                })
+            stations_dynamic.insertOne({
+                "stationStaticId": res.data.fields.stationcode,
+                "bikesAvailable": res.data.fields.capacity - res.data.fields.numdocksavailable,
+                "docksAvailable": res.data.fields.numdocksavailable,
+                "createdAt": res.data.record_timestamp
             })
         })
 }
@@ -247,13 +243,11 @@ function createRecordParis(stationId) {
 function createRecordLyon(stationId) {
     axios.get('https://api.jcdecaux.com/vls/v3/stations/'+ stationId +'?contract=Lyon&apiKey=51fa7fac045a1eb38ee6a6cc8f4c05509c0a9a08')
         .then(res => {
-            res.data.records.forEach(elem => {
-                stations_dynamic.insertOne({
-                    "stationStaticId": elem.number,
-                    "bikesAvailable": elem.available_bikes,
-                    "docksAvailable": elem.available_bike_stands,
-                    "createdAt": new Date()
-                })
+            stations_dynamic.insertOne({
+                "stationStaticId": res.data.number,
+                "bikesAvailable": res.data.available_bikes,
+                "docksAvailable": res.data.available_bike_stands,
+                "createdAt": new Date()
             })
         })
 }
@@ -261,13 +255,11 @@ function createRecordLyon(stationId) {
 function createRecordRennes(stationId) {
     axios.get('https://data.rennesmetropole.fr/api/records/1.0/search/?dataset=stations_vls&q=&refine.idstation='+ stationId)
         .then(res => {
-            res.data.records.forEach(elem => {
-                stations_dynamic.insertOne({
-                    "stationStaticId": elem.recordid,
-                    "bikesAvailable": elem.fields.nombrevelosdisponibles,
-                    "docksAvailable": elem.fields.nombreemplacementsdisponibles,
-                    "createdAt": new Date()
-                })
+            stations_dynamic.insertOne({
+                "stationStaticId": parseInt(res.data.fields.idstation),
+                "bikesAvailable": res.data.fields.nombrevelosdisponibles,
+                "docksAvailable": res.data.fields.nombreemplacementsdisponibles,
+                "createdAt": new Date()
             })
         })
 }
