@@ -36,4 +36,8 @@ To run project in production mode :
 
 ## Database 'structure'
 
-Go to [doc/database.md](`doc/database.md`)
+See [`doc/database.md`](doc/database.md)
+
+## API documentation
+
+See [`doc/api.md`](doc/api.md)
