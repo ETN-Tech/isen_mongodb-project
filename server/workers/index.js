@@ -30,7 +30,7 @@ MongoClient.connect(process.env.DATABASE_URI, function(err, client) {
 router.get('/static', (req, res) => {
     createStaticDb();
 
-    res.status(200).json('OK');
+    res.status(200).json('Done');
 })
 
 let autoUpdate = false;
@@ -48,10 +48,12 @@ router.get('/dynamic', (req, res) => {
         console.log('> Stopped automatic update');
     }
 
-    res.status(200).json(autoUpdate? 'OK, Started automatic update' : 'OK, Stopped automatic update');
+    res.status(200).json(autoUpdate? 'Started automatic update' : 'Stopped automatic update');
 });
 
 router.get('/dynamic/clear', (req, res) => {
+    console.log('> Cleared dynamic')
+
     // Clear collection
     stations_dynamic.drop()
         .then(() => console.log('Dropped dynamic'))
@@ -130,6 +132,8 @@ function updateDynamicDb (){
                     createRecordLyon(station.stationId);
                 }
             })
+
+            console.log('Update finished');
         })
         .catch(err => {
             console.log(err)
@@ -158,6 +162,10 @@ function createStaticLille() {
                 })
             })
         })
+        .catch(err => {
+            console.log(err)
+            throw err
+        });
 }
 
 function createStaticParis() {
@@ -176,6 +184,10 @@ function createStaticParis() {
                 })
             })
         })
+        .catch(err => {
+            console.log(err)
+            throw err
+        });
 }
 
 function createStaticLyon() {
@@ -194,6 +206,10 @@ function createStaticLyon() {
                 })
             })
         })
+        .catch(err => {
+            console.log(err)
+            throw err
+        });
 }
 
 function createStaticRennes() {
@@ -212,6 +228,10 @@ function createStaticRennes() {
                 })
             })
         })
+        .catch(err => {
+            console.log(err)
+            throw err
+        });
 }
 
 /* CREATE RECORDS (DYNAMIC) */
@@ -219,47 +239,75 @@ function createStaticRennes() {
 function createRecordLille(stationId) {
     axios.get('https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&refine.libelle='+ stationId)
         .then(res => {
+            const elem = res.data.records[0];
+
             stations_dynamic.insertOne({
-                "stationStaticId": res.data.fields.libelle,
-                "bikesAvailable": res.data.fields.nbvelosdispo,
-                "docksAvailable": res.data.fields.nbplacesdispo,
-                "createdAt": res.data.fields.datemiseajour
+                "stationStaticId": elem.fields.libelle,
+                "bikesAvailable": elem.fields.nbvelosdispo,
+                "docksAvailable": elem.fields.nbplacesdispo,
+                "createdAt": elem.fields.datemiseajour
             })
         })
+        .catch(err => {
+            console.log(err)
+            console.log("stationId: "+ stationId)
+            throw err
+        });
 }
 
 function createRecordParis(stationId) {
     axios.get('https://opendata.paris.fr/api/records/1.0/search/?dataset=velib-disponibilite-en-temps-reel&q=&refine.stationcode='+ stationId)
         .then(res => {
+            const elem = res.data.records[0];
+
             stations_dynamic.insertOne({
-                "stationStaticId": res.data.fields.stationcode,
-                "bikesAvailable": res.data.fields.capacity - res.data.fields.numdocksavailable,
-                "docksAvailable": res.data.fields.numdocksavailable,
-                "createdAt": res.data.record_timestamp
+                "stationStaticId": elem.fields.stationcode,
+                "bikesAvailable": elem.fields.capacity - elem.fields.numdocksavailable,
+                "docksAvailable": elem.fields.numdocksavailable,
+                "createdAt": elem.record_timestamp
             })
         })
+        .catch(err => {
+            console.log(err)
+            console.log("stationId: "+ stationId)
+            throw err
+        });
 }
 
 function createRecordLyon(stationId) {
     axios.get('https://api.jcdecaux.com/vls/v3/stations/'+ stationId +'?contract=Lyon&apiKey=51fa7fac045a1eb38ee6a6cc8f4c05509c0a9a08')
         .then(res => {
+            const elem = res.data;
+
             stations_dynamic.insertOne({
-                "stationStaticId": res.data.number,
-                "bikesAvailable": res.data.available_bikes,
-                "docksAvailable": res.data.available_bike_stands,
+                "stationStaticId": elem.number,
+                "bikesAvailable": elem.available_bikes,
+                "docksAvailable": elem.available_bike_stands,
                 "createdAt": new Date()
             })
         })
+        .catch(err => {
+            console.log(err)
+            console.log("stationId: "+ stationId)
+            throw err
+        });
 }
 
 function createRecordRennes(stationId) {
     axios.get('https://data.rennesmetropole.fr/api/records/1.0/search/?dataset=stations_vls&q=&refine.idstation='+ stationId)
         .then(res => {
+            const elem = res.data.records[0];
+
             stations_dynamic.insertOne({
-                "stationStaticId": parseInt(res.data.fields.idstation),
-                "bikesAvailable": res.data.fields.nombrevelosdisponibles,
-                "docksAvailable": res.data.fields.nombreemplacementsdisponibles,
+                "stationStaticId": parseInt(elem.fields.idstation),
+                "bikesAvailable": elem.fields.nombrevelosdisponibles,
+                "docksAvailable": elem.fields.nombreemplacementsdisponibles,
                 "createdAt": new Date()
             })
         })
+        .catch(err => {
+            console.log(err)
+            console.log("stationId: "+ stationId)
+            throw err
+        });
 }
