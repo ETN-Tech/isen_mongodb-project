@@ -11,24 +11,26 @@ import Stations from "./business/Stations";
 function App() {
 
   return (
-    <BrowserRouter>
-      <Switch>
-        <Route exact path='/'>
-          <Home/>
-        </Route>
+    <div className="container">
+      <BrowserRouter>
+        <Switch>
+          <Route exact path='/'>
+            <Home/>
+          </Route>
 
-        <Route exact path='/client'>
-          <Client/>
-        </Route>
+          <Route exact path='/client'>
+            <Client/>
+          </Route>
 
-        <Route exact path='/business'>
-          <Business/>
-        </Route>
-        <Route path='/business/stations/:id'>
-          <Stations/>
-        </Route>
-      </Switch>
-    </BrowserRouter>
+          <Route exact path='/business'>
+            <Business/>
+          </Route>
+          <Route path='/business/stations/:id'>
+            <Stations/>
+          </Route>
+        </Switch>
+      </BrowserRouter>
+    </div>
   );
 
 }
